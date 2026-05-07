@@ -1,164 +1,34 @@
 /* ─────────────────────────────────────────────────────────────
-   КОСМОЭНЕРГЕТИКА · script.js
-   1. Звёздное поле (canvas) — двухслойный параллакс + редкие
-      «кванты», которые вспыхивают на ходу.
-   2. Курсор-аура — мягкое свечение, идущее за указателем.
-   3. Reveal — секции и карточки появляются на скролле.
-   4. Чакра-rail — подсветка активного узла во время скролла.
+   ПАВЕЛ САВИНКИН · script.js
+   Минималистичные скролл-анимации:
+   1. Прогресс-бар сверху.
+   2. Reveal текстовых блоков.
+   3. Отрисовка тонких линий (SVG) по мере скролла —
+      stroke-dashoffset завязан на положение элемента в viewport.
+   4. Тонкое поведение топбара (граница при скролле).
    ───────────────────────────────────────────────────────────── */
 
 (() => {
 
-  /* ── Reduced motion guard ─────────────────────────────────── */
   const REDUCE = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  /* ════════════════════════════════════════════════════════════
-     1. STARFIELD
-     ════════════════════════════════════════════════════════════ */
-  const canvas = document.getElementById('starfield');
-  const ctx = canvas.getContext('2d');
-  let dpr = Math.min(window.devicePixelRatio || 1, 2);
-  let stars = [];
-  let quanta = [];
-  let w = 0, h = 0;
-  let scrollY = 0;
+  /* ── 1. PROGRESS BAR ──────────────────────────────────────── */
+  const progress = document.querySelector('.progress');
+  const topbar   = document.querySelector('.topbar');
 
-  const STAR_COUNT = 220;
-  const QUANTA_MAX = 18;
-
-  function resize() {
-    dpr = Math.min(window.devicePixelRatio || 1, 2);
-    w = window.innerWidth;
-    h = window.innerHeight;
-    canvas.width  = w * dpr;
-    canvas.height = h * dpr;
-    canvas.style.width  = w + 'px';
-    canvas.style.height = h + 'px';
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    seedStars();
-  }
-
-  function rand(a, b) { return a + Math.random() * (b - a); }
-
-  function seedStars() {
-    stars = [];
-    for (let i = 0; i < STAR_COUNT; i++) {
-      const depth = Math.random();              // 0..1, ближе = крупнее
-      stars.push({
-        x: Math.random() * w,
-        y: Math.random() * h * 1.4,
-        z: depth,
-        r: depth * 1.6 + 0.2,
-        tw: Math.random() * Math.PI * 2,        // фаза мерцания
-        tws: rand(0.005, 0.02),                 // скорость мерцания
-        hue: Math.random() < 0.85 ? 0 : (Math.random() < 0.5 ? 280 : 38) // редкие цветные
-      });
-    }
-  }
-
-  function spawnQuant() {
-    if (quanta.length >= QUANTA_MAX) return;
-    quanta.push({
-      x: Math.random() * w,
-      y: Math.random() * h,
-      r: 0,
-      maxR: rand(40, 90),
-      life: 0,
-      maxLife: rand(70, 130),
-      hue: [38, 200, 320][Math.floor(Math.random() * 3)]
-    });
-  }
-
-  function drawStar(s) {
-    s.tw += s.tws;
-    const flicker = 0.55 + Math.sin(s.tw) * 0.45;
-    const yWithScroll = s.y - scrollY * (0.06 + s.z * 0.18);
-    const yy = ((yWithScroll % (h * 1.4)) + h * 1.4) % (h * 1.4) - h * 0.2;
-
-    ctx.beginPath();
-    if (s.hue === 0) {
-      ctx.fillStyle = `rgba(255,255,255,${flicker * (0.4 + s.z * 0.6)})`;
-    } else {
-      ctx.fillStyle = `hsla(${s.hue}, 90%, 75%, ${flicker * (0.5 + s.z * 0.5)})`;
-    }
-    ctx.arc(s.x, yy, s.r, 0, Math.PI * 2);
-    ctx.fill();
-
-    // glow для крупных
-    if (s.z > 0.7) {
-      ctx.beginPath();
-      ctx.fillStyle = (s.hue === 0)
-        ? `rgba(255,255,255,${flicker * 0.06})`
-        : `hsla(${s.hue}, 90%, 70%, ${flicker * 0.08})`;
-      ctx.arc(s.x, yy, s.r * 4, 0, Math.PI * 2);
-      ctx.fill();
-    }
-  }
-
-  function drawQuant(q) {
-    q.life++;
-    q.r = q.maxR * (q.life / q.maxLife);
-    const alpha = (1 - q.life / q.maxLife) * 0.5;
-    const grd = ctx.createRadialGradient(q.x, q.y, 0, q.x, q.y, q.r);
-    grd.addColorStop(0, `hsla(${q.hue}, 100%, 70%, ${alpha})`);
-    grd.addColorStop(0.6, `hsla(${q.hue}, 100%, 60%, ${alpha * 0.2})`);
-    grd.addColorStop(1, `hsla(${q.hue}, 100%, 60%, 0)`);
-    ctx.fillStyle = grd;
-    ctx.beginPath();
-    ctx.arc(q.x, q.y, q.r, 0, Math.PI * 2);
-    ctx.fill();
-  }
-
-  let frame = 0;
-  function loop() {
-    ctx.clearRect(0, 0, w, h);
-    for (const s of stars) drawStar(s);
-
-    if (frame % 60 === 0 && Math.random() < 0.7) spawnQuant();
-    quanta = quanta.filter(q => q.life < q.maxLife);
-    for (const q of quanta) drawQuant(q);
-
-    frame++;
-    requestAnimationFrame(loop);
-  }
-
-  resize();
-  window.addEventListener('resize', resize, { passive: true });
-  if (!REDUCE) requestAnimationFrame(loop);
-
-  /* ════════════════════════════════════════════════════════════
-     2. CURSOR AURA
-     ════════════════════════════════════════════════════════════ */
-  const glow = document.querySelector('.cursor-glow');
-  let mx = 0, my = 0, gx = 0, gy = 0;
-
-  if (!REDUCE && glow && !matchMedia('(hover: none)').matches) {
-    document.addEventListener('mousemove', (e) => {
-      mx = e.clientX; my = e.clientY;
-      glow.style.opacity = '1';
-    }, { passive: true });
-
-    document.addEventListener('mouseleave', () => {
-      glow.style.opacity = '0';
-    });
-
-    function follow() {
-      gx += (mx - gx) * 0.12;
-      gy += (my - gy) * 0.12;
-      glow.style.transform = `translate(${gx}px, ${gy}px) translate(-50%, -50%)`;
-      requestAnimationFrame(follow);
-    }
-    follow();
-  }
-
-  /* ════════════════════════════════════════════════════════════
-     3. SCROLL EFFECTS — parallax + reveal
-     ════════════════════════════════════════════════════════════ */
   function onScroll() {
-    scrollY = window.scrollY;
+    const h = document.documentElement;
+    const total = h.scrollHeight - h.clientHeight;
+    const pct = total > 0 ? (h.scrollTop / total) * 100 : 0;
+    if (progress) progress.style.width = pct + '%';
+    if (topbar) topbar.classList.toggle('is-scrolled', h.scrollTop > 8);
+    updateLines();
   }
   window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll, { passive: true });
 
+
+  /* ── 2. REVEAL ────────────────────────────────────────────── */
   const reveals = document.querySelectorAll('.reveal');
   if ('IntersectionObserver' in window) {
     const io = new IntersectionObserver((entries) => {
@@ -174,49 +44,75 @@
     reveals.forEach(el => el.classList.add('is-in'));
   }
 
-  /* ════════════════════════════════════════════════════════════
-     4. CHAKRA RAIL — active section tracking
-     ════════════════════════════════════════════════════════════ */
-  const sections = Array.from(document.querySelectorAll('main section[id]'));
-  const railNodes = Array.from(document.querySelectorAll('.chakra-rail__node'));
-  const idToNode = {};
-  railNodes.forEach(n => {
-    const href = n.getAttribute('href').replace('#', '');
-    idToNode[href] = n;
+
+  /* ── 3. LINE DRAWING ON SCROLL ────────────────────────────── */
+  /*
+     Каждая SVG-линия с классом .line--scroll получает
+     stroke-dasharray: 1 и stroke-dashoffset: 1 (через CSS).
+     Скрипт смотрит, какую часть viewport проходит её SVG-родитель,
+     и плавно сводит dashoffset от 1 (невидимо) до 0 (нарисовано).
+   */
+  const lines = Array.from(document.querySelectorAll('.line--scroll'));
+  // Группируем по ближайшему SVG, чтобы один раз считать его прогресс.
+  const groups = new Map();
+  lines.forEach((el) => {
+    const svg = el.closest('svg');
+    if (!svg) return;
+    if (!groups.has(svg)) groups.set(svg, []);
+    groups.get(svg).push(el);
   });
 
-  if ('IntersectionObserver' in window) {
-    const io2 = new IntersectionObserver((entries) => {
-      for (const e of entries) {
-        const id = e.target.id;
-        const node = idToNode[id];
-        if (!node) continue;
-        if (e.isIntersecting) {
-          railNodes.forEach(n => n.classList.remove('is-active'));
-          node.classList.add('is-active');
-        }
-      }
-    }, { threshold: 0.45 });
-    sections.forEach(s => io2.observe(s));
+  function clamp01(v) { return v < 0 ? 0 : v > 1 ? 1 : v; }
+  // Кубическая лёгкая ease-out, чтобы линия рисовалась плавно.
+  function easeOut(t) { return 1 - Math.pow(1 - t, 2.4); }
+
+  function updateLines() {
+    if (REDUCE) return;
+    const vh = window.innerHeight;
+    groups.forEach((els, svg) => {
+      const r = svg.getBoundingClientRect();
+      // Прогресс: 0, когда верх SVG только-только зашёл в viewport,
+      // 1 — когда низ SVG поднялся на 30% сверху экрана.
+      const start = vh * 0.95;             // верх SVG ниже этой линии = 0
+      const end   = vh * 0.15;             // верх SVG выше этой линии = 1
+      let p = (start - r.top) / (start - end);
+      p = clamp01(p);
+      // Дополнительно учитываем размер SVG (для длинных секций).
+      const heightFactor = Math.min(1, vh / Math.max(r.height, 1));
+      const eased = easeOut(p * (0.6 + 0.4 * heightFactor));
+      const dashOffset = (1 - eased).toFixed(4);
+      els.forEach((el, i) => {
+        // Лёгкий каскад между линиями внутри одной группы.
+        const delay = i * 0.06;
+        const local = clamp01((eased - delay) / Math.max(0.001, 1 - delay));
+        el.style.strokeDashoffset = (1 - local).toFixed(4);
+      });
+      // подавляем линт — переменная нужна была для подсчёта
+      void dashOffset;
+    });
   }
 
-  /* ════════════════════════════════════════════════════════════
-     5. SUBTLE TILT ON HERO ORBIT (mouse-look)
-     ════════════════════════════════════════════════════════════ */
-  const orbit = document.querySelector('.hero__orbit');
-  if (orbit && !REDUCE && !matchMedia('(hover: none)').matches) {
-    const hero = document.getElementById('hero');
-    hero.addEventListener('mousemove', (e) => {
-      const rect = hero.getBoundingClientRect();
-      const cx = rect.left + rect.width / 2;
-      const cy = rect.top  + rect.height / 2;
-      const dx = (e.clientX - cx) / rect.width;
-      const dy = (e.clientY - cy) / rect.height;
-      orbit.style.transform = `perspective(1200px) rotateY(${dx * 6}deg) rotateX(${-dy * 6}deg)`;
-    });
-    hero.addEventListener('mouseleave', () => {
-      orbit.style.transform = '';
-    });
+  // Инициализация.
+  if (!REDUCE) {
+    updateLines();
+    // Дополнительный проход после загрузки шрифтов/изображений.
+    window.addEventListener('load', updateLines);
+  } else {
+    lines.forEach(el => el.style.strokeDashoffset = 0);
   }
+
+
+  /* ── 4. SMOOTH ANCHOR (учитывает фикс. шапку) ─────────────── */
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', (e) => {
+      const id = a.getAttribute('href').slice(1);
+      if (!id) return;
+      const target = document.getElementById(id);
+      if (!target) return;
+      e.preventDefault();
+      const top = target.getBoundingClientRect().top + window.scrollY - 60;
+      window.scrollTo({ top, behavior: 'smooth' });
+    });
+  });
 
 })();
