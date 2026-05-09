@@ -21,22 +21,6 @@
 
   <div class="progress" aria-hidden="true"></div>
 
-  <!-- Фоновая декоративная сетка с лёгким параллаксом -->
-  <svg class="bg-grid" aria-hidden="true" preserveAspectRatio="none" viewBox="0 0 1200 800">
-    <defs>
-      <pattern id="bg-grid-pattern" width="80" height="80" patternUnits="userSpaceOnUse">
-        <path d="M 80 0 L 0 0 0 80" class="bg-grid__cell" fill="none"/>
-      </pattern>
-    </defs>
-    <rect width="1200" height="800" fill="url(#bg-grid-pattern)"/>
-  </svg>
-
-  <!-- Боковая вертикальная линия-маркер: длина зависит от скролла -->
-  <div class="rail" aria-hidden="true">
-    <span class="rail__line"></span>
-    <span class="rail__dot"></span>
-  </div>
-
   <header class="topbar">
     <a href="#top" class="brand">
       <svg class="brand__mark" viewBox="0 0 40 40" aria-hidden="true">
@@ -67,46 +51,19 @@
 
     <!-- ════════════════ HERO ════════════════ -->
     <section class="hero">
-      <!-- Угловые засечки -->
-      <svg class="corner corner--tl" viewBox="0 0 60 60" aria-hidden="true">
-        <line x1="0" y1="0" x2="40" y2="0" class="line line--draw" pathLength="1" style="--draw-delay:1.1s"/>
-        <line x1="0" y1="0" x2="0" y2="40" class="line line--draw" pathLength="1" style="--draw-delay:1.2s"/>
-      </svg>
-      <svg class="corner corner--tr" viewBox="0 0 60 60" aria-hidden="true">
-        <line x1="60" y1="0" x2="20" y2="0" class="line line--draw" pathLength="1" style="--draw-delay:1.1s"/>
-        <line x1="60" y1="0" x2="60" y2="40" class="line line--draw" pathLength="1" style="--draw-delay:1.2s"/>
-      </svg>
-      <svg class="corner corner--bl" viewBox="0 0 60 60" aria-hidden="true">
-        <line x1="0" y1="60" x2="40" y2="60" class="line line--draw" pathLength="1" style="--draw-delay:1.3s"/>
-        <line x1="0" y1="60" x2="0" y2="20" class="line line--draw" pathLength="1" style="--draw-delay:1.4s"/>
-      </svg>
-      <svg class="corner corner--br" viewBox="0 0 60 60" aria-hidden="true">
-        <line x1="60" y1="60" x2="20" y2="60" class="line line--draw" pathLength="1" style="--draw-delay:1.3s"/>
-        <line x1="60" y1="60" x2="60" y2="20" class="line line--draw" pathLength="1" style="--draw-delay:1.4s"/>
-      </svg>
-
-      <!-- Плавающие тонкие штрихи (подсвечиваются курсором) -->
-      <span class="float-line float-line--1" aria-hidden="true"></span>
-      <span class="float-line float-line--2" aria-hidden="true"></span>
-      <span class="float-line float-line--3" aria-hidden="true"></span>
-
       <!-- Фоновая графика: круги рисуются и медленно вращаются -->
       <svg class="hero__graphic" viewBox="0 0 800 800" aria-hidden="true" preserveAspectRatio="xMidYMid meet">
         <g class="spin spin--slow">
           <circle cx="400" cy="400" r="360" class="line line--draw" pathLength="1" style="--draw-delay:.0s"/>
-          <circle cx="400" cy="40"  r="3"   class="dot dot--accent" />
         </g>
         <g class="spin spin--rev">
           <circle cx="400" cy="400" r="280" class="line line--draw" pathLength="1" style="--draw-delay:.25s"/>
-          <circle cx="680" cy="400" r="2.5" class="dot" />
         </g>
         <g class="spin spin--med">
           <circle cx="400" cy="400" r="200" class="line line--draw" pathLength="1" style="--draw-delay:.5s"/>
-          <circle cx="200" cy="400" r="2"   class="dot" />
         </g>
         <g class="spin spin--rev2">
           <circle cx="400" cy="400" r="120" class="line line--draw" pathLength="1" style="--draw-delay:.75s"/>
-          <circle cx="400" cy="520" r="2"   class="dot dot--accent" />
         </g>
         <circle cx="400" cy="400" r="40"  class="line line--draw" pathLength="1" style="--draw-delay:1s"/>
         <!-- лёгкие штрихи внутри -->
@@ -235,28 +192,17 @@
     </section>
 
 
-    <!-- ════════════════ DIVIDER ════════════════ -->
-    <div class="divider divider--rev" aria-hidden="true">
-      <svg viewBox="0 0 1200 60" preserveAspectRatio="none">
-        <path d="M0,30 Q300,55 600,30 T1200,30" class="line line--scroll" pathLength="1" fill="none"/>
-      </svg>
-    </div>
-
-
     <!-- ════════════════ PORTRAIT ════════════════ -->
     <section class="portrait">
       <svg class="portrait__graphic" viewBox="0 0 600 600" aria-hidden="true">
         <g class="spin spin--slow">
           <circle cx="300" cy="300" r="280" class="line line--scroll" pathLength="1"/>
-          <circle cx="300" cy="20"  r="3"   class="dot" />
         </g>
         <g class="spin spin--rev">
           <circle cx="300" cy="300" r="220" class="line line--scroll" pathLength="1"/>
-          <circle cx="520" cy="300" r="2"   class="dot dot--accent" />
         </g>
         <g class="spin spin--med">
           <circle cx="300" cy="300" r="160" class="line line--scroll" pathLength="1"/>
-          <circle cx="140" cy="300" r="2.5" class="dot" />
         </g>
       </svg>
       <figure class="portrait__frame reveal">
@@ -346,15 +292,12 @@
         <svg class="sessions__graphic" viewBox="0 0 400 400" aria-hidden="true">
           <g class="spin spin--slow">
             <circle cx="200" cy="200" r="180" class="line line--scroll" pathLength="1"/>
-            <circle cx="200" cy="20"  r="2.5" class="dot dot--accent" />
           </g>
           <g class="spin spin--rev">
             <circle cx="200" cy="200" r="120" class="line line--scroll" pathLength="1"/>
-            <circle cx="320" cy="200" r="2"   class="dot" />
           </g>
           <g class="spin spin--med">
             <circle cx="200" cy="200" r="60"  class="line line--scroll" pathLength="1"/>
-            <circle cx="140" cy="200" r="1.5" class="dot" />
           </g>
         </svg>
 

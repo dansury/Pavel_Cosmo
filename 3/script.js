@@ -11,44 +11,16 @@
 
   const REDUCE = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  /* ── 1. PROGRESS / TOPBAR / RAIL / PARALLAX ───────────────── */
+  /* ── 1. PROGRESS / TOPBAR ─────────────────────────────────── */
   const progress = document.querySelector('.progress');
   const topbar   = document.querySelector('.topbar');
-  const railDot  = document.querySelector('.rail__dot');
-  const heroGfx  = document.querySelector('.hero__graphic');
-  const bgGrid   = document.querySelector('.bg-grid');
-  const heroSec  = document.querySelector('.hero');
 
   function onScroll() {
     const h = document.documentElement;
     const total = h.scrollHeight - h.clientHeight;
-    const y = h.scrollTop;
-    const pct = total > 0 ? (y / total) * 100 : 0;
-
+    const pct = total > 0 ? (h.scrollTop / total) * 100 : 0;
     if (progress) progress.style.width = pct + '%';
-    if (topbar) topbar.classList.toggle('is-scrolled', y > 8);
-
-    // Боковой маркер: точка едет от 80px до (vh - 80px)
-    if (railDot) {
-      const top = 80 + (window.innerHeight - 160) * (pct / 100);
-      railDot.style.top = top + 'px';
-    }
-
-    // Лёгкий параллакс на фоновой сетке (медленнее скролла)
-    if (bgGrid && !REDUCE) {
-      bgGrid.style.setProperty('--bg-grid-y', `${-y * 0.08}px`);
-    }
-
-    // Hero-графика смещается с задержкой и тает к концу секции
-    if (heroGfx && heroSec && !REDUCE) {
-      const heroRect = heroSec.getBoundingClientRect();
-      const offset = -y * 0.18;
-      heroGfx.style.setProperty('--hero-y', `${offset}px`);
-      // Плавно гасим прозрачность, когда hero уходит за экран
-      const fade = Math.max(0, Math.min(1, (heroRect.bottom) / window.innerHeight));
-      heroGfx.style.opacity = (0.5 * fade).toFixed(3);
-    }
-
+    if (topbar) topbar.classList.toggle('is-scrolled', h.scrollTop > 8);
     updateLines();
   }
   window.addEventListener('scroll', onScroll, { passive: true });
@@ -106,8 +78,7 @@
 
   if (!REDUCE) {
     updateLines();
-    onScroll();
-    window.addEventListener('load', () => { updateLines(); onScroll(); });
+    window.addEventListener('load', updateLines);
   } else {
     lines.forEach(el => el.style.strokeDashoffset = 0);
   }
